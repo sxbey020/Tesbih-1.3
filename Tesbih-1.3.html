@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tesbih</title>
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: #080b09;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    text-align: center;
+    user-select: none;
+    touch-action: manipulation;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.theme-ocean {
+    background: #06131c;
+}
+
+body.theme-sand {
+    background: #21170d;
+    color: #fff4dc;
+}
+
+body.theme-purple {
+    background: #130b20;
+}
+
+body.theme-light {
+    background: #f2f4f3;
+    color: #101512;
+}
+
+#screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.content {
+    width: 90%;
+    max-width: 500px;
+    pointer-events: none;
+}
+
+#setup {
+    pointer-events: auto;
+}
+
+h1 {
+    font-size: 32px;
+    margin: 0 0 25px;
+}
+
+.controls {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 3000;
+}
+
+select {
+    padding: 9px 12px;
+    border: 1px solid #3c443e;
+    border-radius: 12px;
+    background: #151a16;
+    color: white;
+    font-size: 13px;
+    outline: none;
+}
+
+.theme-light select {
+    background: white;
+    color: #101512;
+    border-color: #c8cfca;
+}
+
+input {
+    width: 190px;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid #3c443e;
+    background: #151a16;
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    outline: none;
+}
+
+.theme-light input {
+    background: white;
+    color: #101512;
+    border-color: #c8cfca;
+}
+
+.start-button {
+    display: block;
+    margin: 15px auto 0;
+    padding: 13px 24px;
+    border: none;
+    border-radius: 15px;
+    background: white;
+    color: #080b09;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.theme-ocean .start-button {
+    background: #55d6ff;
+    color: #06131c;
+}
+
+.theme-sand .start-button {
+    background: #d4af37;
+    color: #21170d;
+}
+
+.theme-purple .start-button {
+    background: #c084fc;
+    color: #130b20;
+}
+
+.theme-light .start-button {
+    background: #101512;
+    color: white;
+}
+
+.start-button:active {
+    transform: scale(0.96);
+}
+
+.start {
+    margin-top: 12px;
+    color: #7f8981;
+    font-size: 14px;
+}
+
+.theme-light .start,
+.theme-light .target {
+    color: #68736c;
+}
+
+#counter {
+    display: none;
+}
+
+.count {
+    font-size: 105px;
+    font-weight: 800;
+    line-height: 1;
+    transition: transform 0.12s ease;
+}
+
+.count.pop {
+    animation: pop 0.18s ease;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.16);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.target {
+    margin-top: 12px;
+    color: #8e9891;
+    font-size: 17px;
+}
+
+.progress {
+    height: 5px;
+    max-width: 360px;
+    margin: 25px auto 0;
+    background: #242a26;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.theme-light .progress {
+    background: #d8ded9;
+}
+
+#bar {
+    height: 100%;
+    width: 0%;
+    background: white;
+    transition: width 0.15s ease;
+}
+
+.theme-ocean #bar {
+    background: #55d6ff;
+}
+
+.theme-sand #bar {
+    background: #d4af37;
+}
+
+.theme-purple #bar {
+    background: #c084fc;
+}
+
+.theme-light #bar {
+    background: #101512;
+}
+
+#done {
+    display: none;
+    margin-top: 25px;
+    font-size: 24px;
+    animation: done 0.5s ease;
+}
+
+@keyframes done {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.plus {
+    position: fixed;
+    pointer-events: none;
+    font-size: 28px;
+    font-weight: 700;
+    animation: plusAnimation 0.7s ease-out forwards;
+    z-index: 1000;
+}
+
+@keyframes plusAnimation {
+    0% {
+        transform: translateY(0) scale(0.7);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translateY(-10px) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-80px) scale(0.8);
+        opacity: 0;
+    }
+}
+
+.tap-ripple {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: ripple 0.5s ease-out forwards;
+    z-index: 999;
+}
+
+.theme-light .tap-ripple {
+    border-color: rgba(16,21,18,0.45);
+}
+
+@keyframes ripple {
+    0% {
+        width: 20px;
+        height: 20px;
+        opacity: 0.8;
+        transform: translate(-50%, -50%);
+    }
+
+    100% {
+        width: 140px;
+        height: 140px;
+        opacity: 0;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.reset {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent;
+    border: none;
+    color: #69736c;
+    font-size: 14px;
+    padding: 10px;
+    z-index: 2000;
+}
+
+.theme-light .reset {
+    color: #68736c;
+}
+
+.hint {
+    position: fixed;
+    bottom: 60px;
+    width: 100%;
+    color: #424a44;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.theme-light .hint {
+    color: #68736c;
+}
+
+.confetti {
+    position: fixed;
+    top: -15px;
+    width: 9px;
+    height: 13px;
+    z-index: 9999;
+    pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="controls">
+    <select id="language" onchange="spracheAendern(this.value)" aria-label="Sprache">
+        <option value="de">Deutsch</option>
+        <option value="tr">Türkçe</option>
+        <option value="en">English</option>
+    </select>
+<select id="theme" onchange="designAendern(this.value)" aria-label="Design">
+    <option value="dark">Dunkel</option>
+    <option value="ocean">Ozean</option>
+    <option value="sand">Sand</option>
+    <option value="purple">Lila</option>
+    <option value="light">Hell</option>
+</select>
+</div>
+<div id="screen">
+    <div class="content">
+    <div id="setup">
+        <h1 id="title">📿 Tesbih</h1>
+
+        <input
+            id="amount"
+            type="number"
+            min="1"
+            inputmode="numeric"
+            placeholder="Wie oft?"
+        >
+
+        <button class="start-button" id="startButton" onclick="start()">
+            Starten
+        </button>
+
+        <div class="start" id="startHint">
+            Anzahl eingeben und auf „Starten“ drücken
+        </div>
+    </div>
+
+    <div id="counter">
+        <div class="count" id="count">0</div>
+
+        <div class="target" id="target">
+            von 0
+        </div>
+
+        <div class="progress">
+            <div id="bar"></div>
+        </div>
+
+        <div id="done">
+            الحمد لله ❤️
+        </div>
+    </div>
+
+</div>
+</div>
+<button class="reset" id="resetButton" onclick="resetten()">
+    ↻ Neu starten
+</button>
+<div class="hint" id="hint">
+    Tippe überall zum Zählen
+</div>
+<script>
+let count = 0;
+let target = 0;
+let started = false;
+let currentLanguage = "de";
+let currentTheme = "dark";
+
+const translations = {
+    de: {
+        title: "📿 Tesbih",
+        placeholder: "Wie oft?",
+        start: "Starten",
+        startHint: "Anzahl eingeben und auf „Starten“ drücken",
+        from: "von",
+        reset: "↻ Neu starten",
+        hint: "Tippe überall zum Zählen"
+    },
+    tr: {
+        title: "📿 Tesbih",
+        placeholder: "Kaç kez?",
+        start: "Başlat",
+        startHint: "Sayıyı girip „Başlat“ düğmesine bas",
+        from: " / ",
+        reset: "↻ Yeniden başlat",
+        hint: "Saymak için ekrana her yerden dokun"
+    },
+    en: {
+        title: "📿 Tasbih",
+        placeholder: "How many?",
+        start: "Start",
+        startHint: "Enter a number and press „Start“",
+        from: "of",
+        reset: "↻ Restart",
+        hint: "Tap anywhere to count"
+    }
+};
+
+document.getElementById("screen").addEventListener("click", function(event) {
+    if (event.target.id === "amount") {
+        return;
+    }
+
+    if (event.target.classList.contains("start-button")) {
+        return;
+    }
+
+    if (!started) {
+        return;
+    }
+
+    zaehlen(event.clientX, event.clientY);
+});
+
+document.getElementById("amount").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        start();
+    }
+});
+
+function start() {
+    const value = parseInt(document.getElementById("amount").value);
+
+    if (!value || value < 1) {
+        return;
+    }
+
+    target = value;
+    count = 0;
+    started = true;
+
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("counter").style.display = "block";
+
+    update();
+}
+
+function zaehlen(x, y) {
+    if (!started || count >= target) {
+        return;
+    }
+
+    count++;
+
+    update();
+    tipAnimation(x, y);
+
+    if (count === target) {
+        document.getElementById("done").style.display = "block";
+        konfetti();
+    }
+}
+
+function update() {
+    const counter = document.getElementById("count");
+    const text = translations[currentLanguage];
+
+    counter.textContent = count;
+
+    document.getElementById("target").textContent =
+        text.from + " " + target;
+
+    document.getElementById("bar").style.width =
+        (count / target * 100) + "%";
+
+    counter.classList.remove("pop");
+    void counter.offsetWidth;
+    counter.classList.add("pop");
+}
+
+function tipAnimation(x, y) {
+    if (x === undefined) {
+        x = window.innerWidth / 2;
+        y = window.innerHeight / 2;
+    }
+
+    const plus = document.createElement("div");
+
+    plus.className = "plus";
+    plus.textContent = "+1";
+    plus.style.left = x + "px";
+    plus.style.top = y + "px";
+
+    document.body.appendChild(plus);
+
+    const ripple = document.createElement("div");
+
+    ripple.className = "tap-ripple";
+    ripple.style.left = x + "px";
+    ripple.style.top = y + "px";
+
+    document.body.appendChild(ripple);
+
+    setTimeout(function() {
+        plus.remove();
+        ripple.remove();
+    }, 800);
+}
+
+function resetten() {
+    count = 0;
+    target = 0;
+    started = false;
+
+    document.getElementById("setup").style.display = "block";
+    document.getElementById("counter").style.display = "none";
+    document.getElementById("done").style.display = "none";
+    document.getElementById("amount").value = "";
+
+    update();
+}
+
+function spracheAendern(language) {
+    currentLanguage = language;
+
+    const text = translations[language];
+
+    document.documentElement.lang = language === "tr" ? "tr" : language;
+
+    document.getElementById("title").textContent = text.title;
+    document.getElementById("amount").placeholder = text.placeholder;
+    document.getElementById("startButton").textContent = text.start;
+    document.getElementById("startHint").textContent = text.startHint;
+    document.getElementById("resetButton").textContent = text.reset;
+    document.getElementById("hint").textContent = text.hint;
+
+    update();
+}
+
+function designAendern(theme) {
+    currentTheme = theme;
+
+    document.body.classList.remove(
+        "theme-ocean",
+        "theme-sand",
+        "theme-purple",
+        "theme-light"
+    );
+
+    if (theme !== "dark") {
+        document.body.classList.add("theme-" + theme);
+    }
+}
+
+function konfetti() {
+    const colors = [
+        "#ffffff",
+        "#d4af37",
+        "#6ee7b7",
+        "#60a5fa",
+        "#f9a8d4",
+        "#fbbf24"
+    ];
+
+    for (let i = 0; i < 180; i++) {
+        const piece = document.createElement("div");
+
+        piece.className = "confetti";
+
+        piece.style.left =
+            Math.random() * 100 + "vw";
+
+        piece.style.background =
+            colors[Math.floor(Math.random() * colors.length)];
+
+        const duration =
+            1800 + Math.random() * 2200;
+
+        const x =
+            (Math.random() - 0.5) * 180;
+
+        piece.animate(
+            [
+                {
+                    transform: "translate(0,0) rotate(0deg)",
+                    opacity: 1
+                },
+                {
+                    transform:
+                        "translate(" +
+                        x +
+                        "px,110vh) rotate(" +
+                        (500 + Math.random() * 900) +
+                        "deg)",
+                    opacity: 0
+                }
+            ],
+            {
+                duration: duration,
+                easing: "cubic-bezier(.2,.75,.35,1)"
+            }
+        );
+
+        document.body.appendChild(piece);
+
+        setTimeout(function() {
+            piece.remove();
+        }, duration);
+    }
+}
+</script>
+</body>
+</html>
